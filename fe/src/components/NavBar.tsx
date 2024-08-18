@@ -60,7 +60,7 @@ export default function NavBar({
                 <div className="flex flex-shrink-0 items-center">
                   <a href="/">
                     <h3 className="text-white h-3 w-auto text-2xl font-semibold text-center mb-6">
-                      Watch LK .
+                      WatchMe
                     </h3>
                   </a>
                 </div>

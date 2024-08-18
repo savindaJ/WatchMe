@@ -7,7 +7,7 @@ const Topbar = ({ toggleSidebar }:any) => {
       <button onClick={toggleSidebar}>
         <FaBars />
       </button>
-      <h1 className="text-lg font-semibold">Watch.LK</h1>
+      <h1 className="text-lg font-semibold">WatchMe</h1>
     </div>
   );
 };
