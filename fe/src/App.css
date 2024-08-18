@@ -1,0 +1,29 @@
+.login-content{
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f1f1f1;
+}
+
+.inner-effect{
+    display: none;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff83;
+    border-radius: 10px;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
+}
+
+.watch-card:hover .inner-effect{
+    display: block;
+    height: 100%;
+}
+
+
+body {
+    background-color: #f7fafc;
+}

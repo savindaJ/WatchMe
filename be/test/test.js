@@ -1,0 +1,64 @@
+const express = require('express');
+const multer = require('multer');
+const { google } = require('googleapis');
+const fs = require('fs');
+
+const app = express();
+const port = 6000;
+
+// Google Drive API configuration using the provided JSON
+const GOOGLE_DRIVE_CREDENTIALS = {
+    "type": "service_account",
+    "project_id": "hello-shoe",
+    "private_key_id": "4d5a00b24bba28f98478a11642690ee0fa715c56",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDa3ytkT4JuV1uN\nEAWb+krD3eMbC2kKIabynNBJw8nV7pDQtpg46NvF8hkC+468I61j03ViOM8SA5ny\nQPgrTZIf2+7WJjzV/nochbSZ2Z2H31F1l8vIFaia7xFTkdmT6QbPubXkA7NGwP2Q\nRM+dNThdhZpxj18XfYUfZexBBf43ZkUAHCNQDJGW+l+3v1yUTXsenVQXkh3x/OgT\nNrECutV/zCzOYeIifwZCXHkxDtMabbPNLCVzUWVDNrIyyMmOfsMqzPsVPn2ML/fU\nxg+3H69KTYZ4iazzPdJ3M4hhj/Lz5uuSWrEIFj/rImVdtoi0Z1pQXBpW2B5AsxH/\njxDl1eJxAgMBAAECggEAEcAVoc388vvstdT9z3eOBrKBD5luTF8MThK/pavWO55c\nakDUuZDQ+g23T5GdMs7l6fmlRHD9AiX+nzH7rm9dEW5hwUZamrRHrPZ+/hcy+mj3\nD0VfRnvTL7WBvzhN3/v/DGuwP6y5JlzSc5fRCpvdVWBXdSw+dwY7/J7keSWGR3HC\nc9DWIPOomzab9laT5b+rgfFCkUdoUT9Uw4F/1aEUBdjhFqjg37VVUAwAjbw2yi0G\nx4SU37OZu7luZsYtBPf4EstcxO+nkaB81/mXLJ45Cw3SbR5+ehDdqpyFGWgg6kPX\nakBVcCMJJ/muvbORDmSAYSewrijEtppx7IM1UTmFXQKBgQDtLTq7mqipTnNoLZn8\nr+C5nAx01PFWOK8htnrAZuxxtba33YjgO+UthZv2PJRbQQapsdspmrGXyxoJxauS\nfAA/sWLie9iR/+d/M3uQ0JFI7ZOmea6dFi9MzOcc11nt6TASp7l/nWLqvCrFuHKQ\nXx380obgHbbCJqWQcWlu8PI3SwKBgQDsPgjzo8WbwR+YXfPAsHmakBA+18xLCjDT\nqe5N/ta9PIepFAKYxnbs8tOnCyzxySGikprmKHW7rjGm7Fb5wCGyTXdpKnPQzXLJ\nPKb3Zpv/tULJXEz+NTs7kEe2utjmcBD7A2Yb3Tcl1g+4VgSxMc9TGrRvQr3nbUZ1\n5reVH6sLswKBgQClnImAajQPVMpdGkqGGUFwGbjQ88g5DoeroMICC1xa4ineJYDo\nIqqaqMsIm7B0L+m5IIoKeQw9FALwg+iT9qYt021a/GNzPx+kwIwtyJVKOSp6ekkl\nQ1Jv7DwM9YrEB6obvKZYp8tkYVP0kCDfEqvb2B157QWqeFXvkGGwp+paFQKBgAnq\npLeNdVsPZUMhFn1NKx2Y1IW+yz2PJPONm4o8m0kARHWNeHpvQki5/LZzWqSfm8DW\nRJhKtH53VnA6VYBQV1nDtLJ+bLQkG6Bk4mFaNkwqkK4hKL42/9CFQu1htH8fzyaq\nQtwCkjENZkWHntTNUXWcllxhQdV4GdATKjuhQ63PAoGBAKSam7BEV6TZ45lqWOpi\nAkOwWHjaxQHUkVb48ALF2sp/PYUA+jBLLkP7ZFdMy4yyWgG6UYlXkz+7WCXmRpPY\nCt79wWcmlHkg1lZT0i8YpFuvhnvHiG8bRNAJcjgOChmaAKmECNK5vSO5PqECFOQ9\nmty2e0BSupRszDoUAftP9wyV\n-----END PRIVATE KEY-----\n",
+    "client_email": "helloshoe@hello-shoe.iam.gserviceaccount.com",
+    "client_id": "115905923271241026972",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/helloshoe%40hello-shoe.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+};
+
+// Set up Google Auth client
+const auth = new google.auth.GoogleAuth({
+    credentials: GOOGLE_DRIVE_CREDENTIALS,
+    scopes: ['https://www.googleapis.com/auth/drive.file'], // Scope to access Drive API
+});
+
+const drive = google.drive({ version: 'v3', auth });
+
+// Set up Multer for file uploads
+const upload = multer({ dest: 'uploads/' });
+
+// Upload endpoint
+app.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+        const fileMetadata = {
+            name: req.file.originalname,
+        };
+        const media = {
+            mimeType: req.file.mimetype,
+            body: fs.createReadStream(req.file.path),
+        };
+
+        const response = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id',
+        });
+
+        // Delete the file from the local server after upload
+        fs.unlinkSync(req.file.path);
+
+        res.status(200).json({ fileId: response.data.id });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).send('Error uploading file');
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
