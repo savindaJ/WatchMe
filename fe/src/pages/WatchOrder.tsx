@@ -68,6 +68,7 @@ export default function WatchOrder({ cart, Total, removeItem, clear }: any) {
         setAddress("");
         setEmail("");
         setPhone("");
+        navigate("/");
       })
       .catch((err) => {
         console.log(err);

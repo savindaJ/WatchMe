@@ -18,7 +18,7 @@ export const getPrnndingOrders = async (): Promise<any> => {
 export const saveOrder = async (order: any): Promise<any> => {
   return new Promise((resolve, reject) => {
     axios
-      .post(API_URL+'/add', order)
+      .post(API_URL + "/add", order)
       .then((response) => {
         resolve(response);
       })
@@ -26,7 +26,7 @@ export const saveOrder = async (order: any): Promise<any> => {
         reject(error);
       });
   });
-}
+};
 
 export const approveOrder = async (id: string): Promise<any> => {
   return new Promise((resolve, reject) => {
@@ -45,6 +45,19 @@ export const setDate = async (id: string, date: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     axios
       .put(`${API_URL}/update`, { date: date, id: id })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+};
+
+export const confiermDeliver = async (id: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    axios
+      .put(`${API_URL}/updateStatus/` + id, {})
       .then((response) => {
         resolve(response);
       })

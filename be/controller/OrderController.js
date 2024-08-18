@@ -6,15 +6,13 @@ const orderController = {
   getAllOrders: async function getAllOrders(req, res) {
     try {
       const orders = await Order.find({ status: "Pending" });
-    //   console.log(orders);
+      //   console.log(orders);
       res.json(orders);
     } catch (error) {
       console.log(error);
     }
   },
   addOrder: async function addOrder(req, res) {
-   
-
     const watchList = req.watchList;
     const newDropList = await Promise.all(
       watchList.map(async (name) => {
@@ -40,6 +38,7 @@ const orderController = {
       address: req.address,
       phone: req.phone,
       status: "Pending",
+      isActive: true,
     });
 
     try {
@@ -80,11 +79,7 @@ const orderController = {
     }
   },
   deleteOrder: async function deleteOrder(id, res) {
-    const deleteMany = async () => {
-      await Order.deleteMany({});
-    }
-
-    deleteMany();
+    await Order.deleteMany({});
     res.status(200).json({ message: "All orders deleted" });
   },
 };

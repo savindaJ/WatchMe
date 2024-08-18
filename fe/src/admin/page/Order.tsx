@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { CiEdit } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
-import { getPrnndingOrders, setDate } from "../../service/orderService";
+import {
+  confiermDeliver,
+  getPrnndingOrders,
+  setDate,
+} from "../../service/orderService";
 import Spinner from "../../components/Spinner";
+import Swal from "sweetalert2";
 
 interface IProduct {
   _id: string;
@@ -14,6 +18,7 @@ interface IProduct {
   status: string;
   total: boolean;
   approve: boolean;
+  isActive: boolean;
 }
 
 export default function Order() {
@@ -37,12 +42,48 @@ export default function Order() {
     setLoading(true);
     getPrnndingOrders()
       .then((response) => {
+        console.log(response.data);
         setData(response.data);
         setLoading(false);
       })
       .catch((error) => {
         console.log(error);
       });
+  }
+
+  function deliverd(id: string, date: string) {
+    setLoading(true);
+    if (date == undefined) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please set delivery date",
+      });
+      setLoading(false);
+      return;
+    }
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to deliver this order?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        confiermDeliver(id)
+          .then((response) => {
+            console.log(response);
+            init();
+            setLoading(false);
+            Swal.fire("Success", "Order deliverd", "success");
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
   }
 
   const setDateOrderDate = (id: string, date: string) => {
@@ -62,6 +103,7 @@ export default function Order() {
     <>
       {loading ? <Spinner /> : null}
       <div className="overflow-x-auto p-10">
+        {/* <button onClick={() => navigate("/admin")} className="bg-blue-500 text-white p-2 shadow-sm rounded-md mb-6">Deliverd</button> */}
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr>
@@ -122,17 +164,14 @@ export default function Order() {
                   )}
                 </td>
                 <td className="px-6 flex py-4 border-b border-gray-300">
-                  <label className="flex flex-row flex-nowrap items-center cursor-pointer">
-                    <input
-                      onClick={() => {
-                        window.location.reload();
-                      }}
-                      checked={item.approve}
-                      type="checkbox"
-                      className="sr-only peer"
-                    ></input>
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
+                  <button
+                    onClick={() => {
+                      deliverd(item._id, item.deliveryDate);
+                    }}
+                    className="bg-blue-500 text-white p-1 shadow-sm rounded-md"
+                  >
+                    Deliverd
+                  </button>
                 </td>
               </tr>
             ))}

@@ -20,6 +20,7 @@ const OrderScheema = new mongoose.Schema({
   phone: String,
   email: String,
   approved: Boolean,
+  isActive: Boolean,
 });
 
 const Order = mongoose.model("Order", OrderScheema);
